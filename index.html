@@ -844,28 +844,30 @@ async function handleDonation() {
   }
 
   try {
+    console.log('📤 Sending donation to:', `${API_BASE_URL}/donate`);
     const res = await fetch(`${API_BASE_URL}/donate`, {
       method: 'POST',
       mode: 'cors',
       body: formData,
       // Do NOT set Content-Type manually — browser sets multipart boundary automatically
     });
+    console.log('📥 Response status:', res.status);
     const data = await res.json();
+    console.log('📦 Response data:', data);
     if (!res.ok) { showError(data.error || 'Server error. Please try again.'); btn.disabled = false; btn.innerHTML = 'Send My Donation'; return; }
 
     // Success
+    console.log('✅ Donation successful!');
     document.getElementById('ref-id').textContent = data.ref_id || 'HFC-' + Math.random().toString(36).substr(2,8).toUpperCase();
     document.getElementById('modal-form').classList.add('hidden');
     document.getElementById('modal-thankyou').classList.remove('hidden');
     document.getElementById('modal-thankyou').classList.add('thankyou-enter');
 
   } catch (err) {
-    // Dev mode: show thank-you even if backend is not running
-    console.warn('Backend not reachable (dev mode). Showing success state.', err);
-    document.getElementById('ref-id').textContent = 'HFC-' + Math.random().toString(36).substr(2,8).toUpperCase();
-    document.getElementById('modal-form').classList.add('hidden');
-    document.getElementById('modal-thankyou').classList.remove('hidden');
-    document.getElementById('modal-thankyou').classList.add('thankyou-enter');
+    console.error('❌ API ERROR:', err);
+    showError(`Network error: ${err.message}. Check browser console for details.`);
+    btn.disabled = false;
+    btn.innerHTML = 'Send My Donation';
   }
 }
 
@@ -886,13 +888,17 @@ function animateNumber(el, target, prefix = '', suffix = '', duration = 1800) {
 async function fetchLiveStats() {
   try {
     const res  = await fetch(`${API_BASE_URL}/stats`, { mode: 'cors' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    animateNumber(document.getElementById('stat-raised'), data.total_raised || 284500, '$');
-    animateNumber(document.getElementById('stat-donors'), data.donor_count  || 4380);
-  } catch {
-    // Fallback demo values
-    animateNumber(document.getElementById('stat-raised'), 284500, '$');
-    animateNumber(document.getElementById('stat-donors'), 4380);
+    console.log('✅ Stats loaded:', data);
+    animateNumber(document.getElementById('stat-raised'), data.total_raised || 0, '$');
+    animateNumber(document.getElementById('stat-donors'), data.donor_count  || 0);
+  } catch (err) {
+    console.error('❌ Stats API ERROR:', err);
+    console.error('API URL:', API_BASE_URL);
+    // Don't show fallback values — let user know there's a problem
+    document.getElementById('stat-raised').textContent = '$—';
+    document.getElementById('stat-donors').textContent = '—';
   }
 }
 
