@@ -705,7 +705,7 @@ function buildPayGrid() {
     card.className = 'pay-card rounded-xl p-3 flex flex-col items-center gap-1.5 bg-gray-50';
     card.dataset.id = m.id;
     card.innerHTML = `
-      <img src="${m.logo}" alt="${m.label}" class="w-8 h-8 object-contain" onerror="this.src='#/32'" />
+      <img src="${m.logo}" alt="${m.label}" class="w-8 h-8 object-contain" onerror="this.src='#'" />
       <span style="font-size:9px;font-weight:600;color:var(--muted);text-align:center;line-height:1.2;">${m.label}</span>`;
     card.addEventListener('click', () => selectMethod(m.id));
     grid.appendChild(card);
